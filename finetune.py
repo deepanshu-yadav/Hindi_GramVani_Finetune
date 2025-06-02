@@ -194,7 +194,7 @@ def freeze_encoder(asr_model, cfg):
     Returns:
         None    
     """    
-    if hasattr(cfg.encoder_config, 'freeze') and cfg.encoder_config.freeze:
+    if hasattr(cfg.model.encoder_config, 'freeze') and cfg.model.encoder_config.freeze:
         print("Freezing the encoder...")
         asr_model.encoder.freeze()
         asr_model.encoder.apply(enable_bn_se)
