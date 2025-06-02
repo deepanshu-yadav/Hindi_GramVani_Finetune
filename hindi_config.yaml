@@ -51,6 +51,8 @@ model:
     dir: tokenizer_output/  # path to directory which contains either tokenizer.model (bpe) or vocab.txt (for wpe)
     type: bpe  # Can be either bpe (SentencePiece tokenizer) or wpe (WordPiece tokenizer)
 
+  encoder_config:
+    freeze: true  # Whether to freeze the weight of encoder 
   spec_augment:
     _target_: nemo.collections.asr.modules.SpectrogramAugmentation
     freq_masks: 2 # set to zero to disable it

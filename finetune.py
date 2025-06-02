@@ -64,6 +64,19 @@ from nemo.utils.exp_manager import exp_manager
 from nemo.utils.get_rank import is_global_rank_zero
 from nemo.utils.trainer_utils import resolve_trainer_cfg
 
+import torch
+import torch.nn as nn
+
+def enable_bn_se(m):
+    if type(m) == nn.BatchNorm1d:
+        m.train()
+        for param in m.parameters():
+            param.requires_grad_(True)
+
+    if 'SqueezeExcite' in type(m).__name__:
+        m.train()
+        for param in m.parameters():
+            param.requires_grad_(True)
 
 def get_base_model(trainer, cfg):
     """
@@ -172,6 +185,22 @@ def update_tokenizer(asr_model, tokenizer_dir, tokenizer_type):
 
     return asr_model
 
+def freeze_encoder(asr_model, cfg):
+    """
+    Freezes the encoder of the model if the `freeze` attribute is set to True in the encoder config.
+    Args:   
+        asr_model: ASRModel instance
+        cfg: config
+    Returns:
+        None    
+    """    
+    if hasattr(cfg.encoder_config, 'freeze') and cfg.encoder_config.freeze:
+        print("Freezing the encoder...")
+        asr_model.encoder.freeze()
+        asr_model.encoder.apply(enable_bn_se)
+        print("Encoder frozen successfully.")
+    else:
+        print("No need to freeze the encoder, proceeding with training as usual.")
 
 def setup_dataloaders(asr_model, cfg):
     """
@@ -208,6 +237,9 @@ def main(cfg):
     # Check vocabulary type and update if needed
     asr_model = check_vocabulary(asr_model, cfg)
 
+    # Freeze encoder if specified in the config
+    freeze_encoder(asr_model, cfg)
+    
     # Setup Data
     asr_model = setup_dataloaders(asr_model, cfg)
 
