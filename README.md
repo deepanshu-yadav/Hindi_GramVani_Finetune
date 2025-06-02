@@ -21,8 +21,8 @@ After installation you need to restart the session for being able to use these l
 ! python prepare_manifest.py
 
 # Tokenize the new Language
-! cp Hindi_GramVani_Finetune/tokenize.py .
-! python tokenize.py
+! cp Hindi_GramVani_Finetune/tokenize_language.py .
+! python tokenize_language.py
 
 # Download the parakeet v2 tdt  model and store it in some directory.
 ! cp Hindi_GramVani_Finetune/store_parakeet.py .
