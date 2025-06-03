@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import wget
 import tarfile
 import random
@@ -161,6 +162,47 @@ def write_manifest(entries, filename):
             f.write("\n")
     print(f"Created {filename} with {len(entries)} entries")
 
+def clean_remaining_file():
+    """
+    Deletes downloaded tar files and extracted dataset directories while preserving
+    the output audio directory and manifest files.
+    """
+    # Define paths from the script
+    base_dir = os.path.join(os.getcwd(), "data", "GigaVoice")
+    output_audio_dir = os.path.join(base_dir, "wavs_16k")
+    dataset_tars = {
+        "train": os.path.join(base_dir, "GV_Train_100h.tar.gz"),
+        "val": os.path.join(base_dir, "GV_Dev_5h.tar.gz"),
+        "test": os.path.join(base_dir, "GV_Eval_3h.tar.gz")
+    }
+    dataset_dirs = {
+        "train": os.path.join(base_dir, "GV_Train_100h"),
+        "val": os.path.join(base_dir, "GV_Dev_5h"),
+        "test": os.path.join(base_dir, "GV_Eval_3h")
+    }
+
+    # Delete tar files
+    for split, tar_path in dataset_tars.items():
+        if os.path.exists(tar_path):
+            try:
+                os.remove(tar_path)
+                print(f"Deleted tar file: {tar_path}")
+            except Exception as e:
+                print(f"Error deleting tar file {tar_path}: {e}")
+        else:
+            print(f"Tar file {tar_path} not found, skipping.")
+
+    # Delete extracted directories
+    for split, dir_path in dataset_dirs.items():
+        if os.path.exists(dir_path) and dir_path != output_audio_dir:
+            try:
+                shutil.rmtree(dir_path)
+                print(f"Deleted directory: {dir_path}")
+            except Exception as e:
+                print(f"Error deleting directory {dir_path}: {e}")
+        else:
+            print(f"Directory {dir_path} not found or is output directory, skipping.")
+
 # Main execution
 if __name__ == "__main__":
     # Download and extract datasets
@@ -181,5 +223,6 @@ if __name__ == "__main__":
     test_entries = process_files(test_audio_dir, test_text_file, output_audio_dir)
     write_manifest(test_entries, test_manifest)
     
+    clean_remaining_file()
     # Write manifest files
     print(f"Total entries processed - Train: {len(train_entries)}, Validation: {len(val_entries)}, Test: {len(test_entries)}")
